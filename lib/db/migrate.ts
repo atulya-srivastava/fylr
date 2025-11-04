@@ -3,9 +3,8 @@ import {drizzle} from "drizzle-orm/neon-http";
 import {neon} from "@neondatabase/serverless";
 
 import * as dotenv from "dotenv"
-import { error } from "console";
 
-dotenv.config({path :".env"});
+dotenv.config({path :"./.env"});
 
 if(!process.env.DATABASE_URL){
     throw new Error("Database url is not in .env");
@@ -20,7 +19,7 @@ async function runMigration() {
         console.log("all migrations are successfully done");
         
     } catch(error){
-             console.log("error in migrations");
+             console.log("error in migrations",error);
              process.exit(1);
     }
 }
