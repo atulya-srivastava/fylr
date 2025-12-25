@@ -1,6 +1,6 @@
 import * as z from "zod";
 
-export const signIpSchema = z
+export const signInSchema = z
   .object({
     identifier: z
       .email({ message: "PLease enter a valid email" })
