@@ -3,7 +3,6 @@ import { auth } from "@clerk/nextjs/server";
 import { files } from "@/lib/db/schema";
 import {eq,and} from "drizzle-orm"
 import { NextRequest, NextResponse } from "next/server";
-import { error } from "console";
 
 export async function PATCH(request:NextRequest,props: {params: Promise<{fileId:string}>}) {
     try{
@@ -41,7 +40,7 @@ export async function PATCH(request:NextRequest,props: {params: Promise<{fileId:
 
         //star status is toggled now
 
-        const updatedFiles =  await db.update(files).set({isStarred: !files.isStarred}).where(
+        const updatedFiles =  await db.update(files).set({isStarred: !file.isStarred}).where(
             and(
                 eq(files.id, fileId),
                 eq(files.userId, userId),
