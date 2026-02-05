@@ -2,6 +2,7 @@
 
 import { useForm } from "react-hook-form";
 import { useSignUp } from "@clerk/nextjs";
+import { ClerkAPIError } from "@clerk/types";
 import { z } from "zod";
 import Link from "next/link";
 import { signUpSchema } from "@/schemas/signUpSchema"; // i wrote this schema
@@ -72,10 +73,11 @@ function SignUpForm() {
         strategy: "email_code",
       });
       setVerifying(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Signup error: ", error);
+      const clerkError = error as { errors?: ClerkAPIError[] };
       setAuthError(
-        error.errors?.[0]?.message ||
+        clerkError.errors?.[0]?.message ||
           "An error occured while sign up. Please try again"
       );
     } finally {
@@ -103,10 +105,11 @@ function SignUpForm() {
         console.error("Verification incompelete for user", result);
         setVerificationError("Verification could not be completed");
       }
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Verification incomplete", error);
+      const clerkError = error as { errors?: ClerkAPIError[] };
       setVerificationError(
-        error.errors?.[0]?.message ||
+        clerkError.errors?.[0]?.message ||
           "An error occured while verifying the code"
       );
     } finally {
@@ -121,7 +124,7 @@ function SignUpForm() {
         <CardHeader className="text-center">
           <CardTitle>Verify Your Email</CardTitle>
           <CardDescription>
-            We've sent a verification code to your email
+            We&apos;ve sent a verification code to your email
           </CardDescription>
         </CardHeader>
 
@@ -157,7 +160,7 @@ function SignUpForm() {
 
           <div className="mt-6 text-center">
             <p className="text-sm text-muted-foreground">
-              Didn't receive a code?{" "}
+              Didn&apos;t receive a code?{" "}
               <button
                 type="button"
                 onClick={async () => {

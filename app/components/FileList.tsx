@@ -3,7 +3,7 @@
 import { useEffect, useState, useMemo } from "react";
 import axios from "axios";
 import { formatDistanceToNow, format } from "date-fns";
-import { Folder, Star, Trash, ExternalLink } from "lucide-react";
+import { Folder, Star, ExternalLink } from "lucide-react";
 import { toast } from "sonner"; 
 import type { File as FileType } from "@/lib/db/schema";
 
@@ -534,7 +534,7 @@ export default function FileList({
             <AlertDialogDescription>
               Are you sure you want to permanently delete{" "}
               <span className="font-medium text-foreground">
-                "{selectedFile?.name}"
+                &quot;{selectedFile?.name}&quot;
               </span>
               ? This action cannot be undone.
             </AlertDialogDescription>

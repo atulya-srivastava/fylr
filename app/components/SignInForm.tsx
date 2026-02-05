@@ -1,6 +1,7 @@
 "use client"
 
 import { useSignIn } from "@clerk/nextjs"
+import { ClerkAPIError } from "@clerk/types"
 import { zodResolver } from "@hookform/resolvers/zod"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
@@ -53,9 +54,10 @@ export default function SignInForm(){
                 console.error("Sign in incomplete, error=",result);
             }
 
-        } catch (error: any) {
+        } catch (error: unknown) {
+            const clerkError = error as { errors?: ClerkAPIError[] };
             setAuthError(
-                error.errors?.[0]?.message || "An error occured during sign in process"
+                clerkError.errors?.[0]?.message || "An error occured during sign in process"
             )
         } finally {
             setIsSubmitting(false);
@@ -156,7 +158,7 @@ export default function SignInForm(){
 
       <CardFooter className="flex justify-center pb-6">
         <p className="text-sm text-muted-foreground">
-          Don't have an account?{" "}
+          Don&apos;t have an account?{" "}
           <Link
             href="/sign-up"
             className="text-primary hover:underline font-medium"
