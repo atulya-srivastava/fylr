@@ -13,7 +13,7 @@ export const signUpSchema = z
       .string()
       .min(1, { message: "Please confirm you password" }),
   })
-  .refine((data) => (data.password = data.passwordConfirmation), {
+  .refine((data) => data.password === data.passwordConfirmation, {
     message: "Passwords do not match",
     path: ["passwordConfirmation"],
   }); //method,message
