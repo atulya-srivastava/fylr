@@ -53,9 +53,13 @@ export async function POST(request: NextRequest){
                         eq(files.isFolder, true)
                     )
                 )
+
+                if(!parentFolder){
+                    return NextResponse.json({error:"Parent folder not found"},{status: 401})
+                }
             } 
             
-            if(!parentId) return NextResponse.json({error:"Parent folder not found"},{status: 401})
+            // if(!parentId) return NextResponse.json({error:"Parent folder not found"},{status: 401})
 
             if(!file.type.startsWith("image/") && file.type !== "application/pdf"){
                 return NextResponse.json({error:"Only images and pdfs are supported"},{status: 401})

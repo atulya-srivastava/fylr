@@ -46,5 +46,5 @@ export const filesRelations = relations(files, ({one ,many}) => ({
 
 // Type definitions 
 
-export const File = typeof files.$inferSelect; //infer the selection which is good for me so that i can use it in the editor which understands this type as i am usimg ts
-export const NewFile = typeof files.$inferInsert; //infer the insertion which is good for me
+export type File = typeof files.$inferSelect; //infer the selection which is good for me so that i can use it in the editor which understands this type as i am usimg ts
+export type NewFile = typeof files.$inferInsert; //infer the insertion which is good for me

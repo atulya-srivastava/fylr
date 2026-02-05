@@ -138,6 +138,8 @@ export default function SignInForm(){
             )}
           </div>
 
+          <div id="clerk-captcha"></div>
+
           {/* Submit Button */}
           <Button
             type="submit"

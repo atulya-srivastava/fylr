@@ -46,6 +46,7 @@ export async function DELETE(request: NextRequest, props: { params: Promise<{ fi
         );
 
         return NextResponse.json({ 
+            success: true,
             message: "File deleted permanently",
             deletedFile: file 
         });
