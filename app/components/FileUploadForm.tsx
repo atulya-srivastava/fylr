@@ -44,6 +44,9 @@ export default function FileUploadForm({
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Custom file name state
+  const [customFileName, setCustomFileName] = useState("");
+
   // Folder creation state
   const [folderModalOpen, setFolderModalOpen] = useState(false);
   const [folderName, setFolderName] = useState("");
@@ -71,6 +74,8 @@ export default function FileUploadForm({
       return;
     }
     setFile(selectedFile);
+    // Set the initial custom file name from the original file name
+    setCustomFileName(selectedFile.name);
     setError(null);
   };
 
@@ -80,6 +85,7 @@ export default function FileUploadForm({
 
   const clearFile = () => {
     setFile(null);
+    setCustomFileName("");
     setError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -89,8 +95,13 @@ export default function FileUploadForm({
   const handleUpload = async () => {
     if (!file) return;
 
+    // Use custom file name if provided, otherwise use original
+    const finalFileName = customFileName.trim() || file.name;
+    
     const formData = new FormData();
-    formData.append("file", file);
+    // Create a new File object with the custom name
+    const renamedFile = new File([file], finalFileName, { type: file.type });
+    formData.append("file", renamedFile);
     formData.append("userId", userId);
     if (currentFolder) {
       formData.append("parentId", currentFolder);
@@ -230,14 +241,15 @@ export default function FileUploadForm({
           </div>
         ) : (
           <div className="space-y-4">
+            {/* File info card */}
             <div className="flex items-center justify-between bg-background p-3 rounded-md border shadow-sm">
-              <div className="flex items-center space-x-3 overflow-hidden">
+              <div className="flex items-center space-x-3 overflow-hidden flex-1">
                 <div className="p-2 bg-primary/10 rounded-md shrink-0">
                   <FileIcon className="h-5 w-5 text-primary" />
                 </div>
-                <div className="text-left overflow-hidden">
-                  <p className="text-sm font-medium truncate max-w-[180px]">
-                    {file.name}
+                <div className="text-left overflow-hidden flex-1">
+                  <p className="text-xs text-muted-foreground mb-1">
+                    Original: {file.name}
                   </p>
                   <p className="text-xs text-muted-foreground">
                     {file.size < 1024
@@ -252,10 +264,24 @@ export default function FileUploadForm({
                 variant="ghost"
                 size="icon"
                 onClick={clearFile}
-                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
               >
                 <X className="h-4 w-4" />
               </Button>
+            </div>
+
+            {/* Editable file name input */}
+            <div className="space-y-2">
+              <Label htmlFor="custom-filename" className="text-left block text-sm font-medium">
+                File Name
+              </Label>
+              <Input
+                id="custom-filename"
+                value={customFileName}
+                onChange={(e) => setCustomFileName(e.target.value)}
+                placeholder="Enter file name..."
+                className="w-full"
+              />
             </div>
 
             {error && (
@@ -277,7 +303,7 @@ export default function FileUploadForm({
 
             <Button
               onClick={handleUpload}
-              disabled={uploading || !!error}
+              disabled={uploading || !!error || !customFileName.trim()}
               className="w-full gap-2"
             >
               {uploading ? (

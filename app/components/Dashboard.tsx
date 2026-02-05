@@ -2,7 +2,7 @@
 
 import { useState, useCallback, useEffect } from "react";
 import { useSearchParams } from "next/navigation";
-import { FileUp, FileText, User } from "lucide-react";
+import { FileUp, FileText, User, ChevronLeft, ChevronRight } from "lucide-react";
 
 // Components
 import FileUploadForm from "@/app/components/FileUploadForm";
@@ -22,6 +22,7 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
+import { Button } from "@/components/ui/button";
 
 interface DashboardContentProps {
   userId: string;
@@ -39,6 +40,7 @@ export default function DashboardContent({
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [currentFolder, setCurrentFolder] = useState<string | null>(null);
   const [currentFolderName, setCurrentFolderName] = useState<string | null>(null);
+  const [isUploadCollapsed, setIsUploadCollapsed] = useState(false);
 
   // Sync state with URL parameter if present
   useEffect(() => {
@@ -101,43 +103,79 @@ export default function DashboardContent({
 
         {/* Files Tab Content */}
         <TabsContent value="files" className="mt-0 border-0 outline-none">
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Upload Section */}
-            <div className="lg:col-span-1">
+          <div className="flex gap-6">
+            {/* Upload Section - Collapsible */}
+            <div
+              className={`transition-all duration-300 ease-in-out ${
+                isUploadCollapsed ? "w-12" : "w-80 lg:w-96"
+              } shrink-0`}
+            >
               <Card>
-                <CardHeader className="flex flex-row items-center gap-3 space-y-0 pb-4">
-                  <div className="bg-primary/10 p-2 rounded-lg">
-                    <FileUp className="h-5 w-5 text-primary" />
-                  </div>
-                  <div>
-                    <CardTitle className="text-lg font-semibold">
+                {isUploadCollapsed ? (
+                  // Collapsed state - just show expand button
+                  <div className="flex flex-col items-center py-4">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => setIsUploadCollapsed(false)}
+                      className="h-10 w-10"
+                      title="Expand upload panel"
+                    >
+                      <ChevronRight className="h-5 w-5" />
+                    </Button>
+                    <div className="mt-4 -rotate-90 whitespace-nowrap text-sm font-medium text-muted-foreground">
                       Upload
-                    </CardTitle>
-                    {currentFolderName && (
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        to <span className="font-medium text-foreground">{currentFolderName}</span>
-                      </p>
-                    )}
-                    {!currentFolderName && (
-                      <p className="text-xs text-muted-foreground mt-0.5">
-                        to <span className="font-medium text-foreground">Home</span>
-                      </p>
-                    )}
+                    </div>
                   </div>
-                </CardHeader>
-                <CardContent>
-                  <FileUploadForm
-                    userId={userId}
-                    onUploadSuccess={handleFileUploadSuccess}
-                    currentFolder={currentFolder}
-                    currentFolderName={currentFolderName}
-                  />
-                </CardContent>
+                ) : (
+                  // Expanded state
+                  <>
+                    <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
+                      <div className="flex items-center gap-3">
+                        <div className="bg-primary/10 p-2 rounded-lg">
+                          <FileUp className="h-5 w-5 text-primary" />
+                        </div>
+                        <div>
+                          <CardTitle className="text-lg font-semibold">
+                            Upload
+                          </CardTitle>
+                          {currentFolderName && (
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              to <span className="font-medium text-foreground">{currentFolderName}</span>
+                            </p>
+                          )}
+                          {!currentFolderName && (
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              to <span className="font-medium text-foreground">Home</span>
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => setIsUploadCollapsed(true)}
+                        className="h-8 w-8"
+                        title="Collapse upload panel"
+                      >
+                        <ChevronLeft className="h-4 w-4" />
+                      </Button>
+                    </CardHeader>
+                    <CardContent>
+                      <FileUploadForm
+                        userId={userId}
+                        onUploadSuccess={handleFileUploadSuccess}
+                        currentFolder={currentFolder}
+                        currentFolderName={currentFolderName}
+                      />
+                    </CardContent>
+                  </>
+                )}
               </Card>
             </div>
 
-            {/* File List Section */}
-            <div className="lg:col-span-2">
+            {/* File List Section - Takes remaining space */}
+            <div className="flex-1 min-w-0">
               <Card className="h-full">
                 <CardHeader className="flex flex-row items-center gap-3 space-y-0 pb-4">
                   <div className="bg-primary/10 p-2 rounded-lg">
