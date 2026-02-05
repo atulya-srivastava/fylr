@@ -9,10 +9,10 @@ export default clerkMiddleware(async (auth,request)=> {
     const url = new URL(request.url)
 
     if(userId && isPublicRoute(request) && url.pathname !=="/"){
-        return NextResponse.redirect(new URL("/dashboard",))
+        return NextResponse.redirect(new URL("/dashboard", request.url))
     }
 
-    //now protecting non-public routes as in the documentation
+    //now protecting non-public routes 
     if(!isPublicRoute(request)){
         await auth.protect()
     }
