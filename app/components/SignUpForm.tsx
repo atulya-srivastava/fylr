@@ -19,7 +19,7 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Separator } from "@radix-ui/react-separator";
+import { Separator } from "@/components/ui/separator";
 import {
   AlertCircle,
   Eye,
@@ -29,7 +29,7 @@ import {
   CheckCircle,
   Loader2,
 } from "lucide-react";
-import { Label } from "@radix-ui/react-label";
+import { Label } from "@/components/ui/label";
 
 function SignUpForm() {
   const [verifying, setVerifying] = useState<boolean>(false);
