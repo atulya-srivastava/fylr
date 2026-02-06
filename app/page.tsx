@@ -151,7 +151,7 @@ export default async function FylrLanding() {
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold tracking-tight mb-4">Everything you need to manage files</h2>
               <p className="text-muted-foreground max-w-2xl mx-auto">
-                Fylr isn't just a bucket. It's a complete file management system designed for ease of use and organization.
+                Fylr isn&apos;t just a bucket. It&apos;s a complete file management system designed for ease of use and organization.
               </p>
             </div>
 

@@ -53,7 +53,7 @@ export async function PATCH(request:NextRequest,props: {params: Promise<{fileId:
 
         return NextResponse.json(updatedFile)
 
-    } catch (error){
+    } catch (_error){
         return NextResponse.json({
                 error: "File not found"},{
                     status: 500

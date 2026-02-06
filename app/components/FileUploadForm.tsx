@@ -37,7 +37,7 @@ export default function FileUploadForm({
   userId,
   onUploadSuccess,
   currentFolder = null,
-  currentFolderName = null,
+  currentFolderName: _currentFolderName = null,
 }: FileUploadFormProps) {
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
