@@ -6,8 +6,6 @@ import {
   ShieldCheck, 
   Zap, 
   ChevronRight, 
-  FileImage, 
-  FileText, 
   LayoutGrid, 
   Github
 } from 'lucide-react';
@@ -17,6 +15,7 @@ import FylrHeroSection from './components/HeroSection';
 
 export default async function FylrLanding() {
   const user = await currentUser();
+  const isSignedIn = !!user;
   
   // Serialize user data for the Navbar component
   const serializedUser = user
@@ -32,32 +31,7 @@ export default async function FylrLanding() {
 
   return (
     <div className="min-h-screen bg-background text-foreground font-sans selection:bg-primary/20 selection:text-primary">
-      {/* --- Navbar --- */}
-      {/* <header className="sticky top-0 z-50 w-full border-b border-border/10 bg-background/80 backdrop-blur-md">
-        <div className="container mx-auto flex h-16 items-center justify-between px-4 md:px-6">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10 text-primary">
-              <CloudUpload className="h-5 w-5" />
-            </div>
-            <span className="text-xl font-bold tracking-tight">Fylr</span>
-          </div>
-          <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-muted-foreground">
-            <Link href="#features" className="hover:text-primary transition-colors">Features</Link>
-            <Link href="#about" className="hover:text-primary transition-colors">About</Link>
-          </nav>
-          <div className="flex items-center gap-4">
-            <Link href="/sign-in" className="text-sm font-medium hover:text-primary transition-colors hidden sm:block">
-              Log in
-            </Link>
-            <Link 
-              href="/sign-up" 
-              className="inline-flex h-9 items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground shadow transition-colors hover:bg-primary/90 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
-            >
-              Get Started
-            </Link>
-          </div>
-        </div>
-      </header> */}
+    
       <Navbar user={serializedUser} />
 
       <main className="flex-1">
@@ -67,11 +41,6 @@ export default async function FylrLanding() {
           <div className="absolute top-0 left-1/2 -translate-x-1/2 -z-10 h-[500px] w-[800px] opacity-20 bg-[radial-gradient(ellipse_at_center,_var(--primary)_0%,_transparent_70%)] blur-3xl pointer-events-none" />
 
           <div className="container mx-auto px-4 md:px-6 text-center">
-            {/* <div className="inline-flex items-center rounded-full border border-border bg-card px-3 py-1 text-sm text-muted-foreground mb-6">
-              <span className="flex h-2 w-2 rounded-full bg-primary mr-2"></span>
-              v1.0 is now live
-            </div> */}
-            
             <h1 className="text-4xl md:text-6xl lg:text-7xl font-extrabold tracking-tight mb-6">
               Your files, <span className="text-primary">organized</span>. <br className="hidden md:block"/>
               Available everywhere.
@@ -83,6 +52,7 @@ export default async function FylrLanding() {
             </p>
             
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+             {isSignedIn ? (
               <Link 
                 href="/dashboard" 
                 className="inline-flex h-11 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-all hover:bg-primary/90 hover:scale-105"
@@ -90,6 +60,15 @@ export default async function FylrLanding() {
                 Go to Dashboard
                 <ChevronRight className="ml-2 h-4 w-4" />
               </Link>
+             ) : (
+              <Link 
+                href="/sign-in"
+                className="inline-flex h-11 items-center justify-center rounded-md bg-primary px-8 text-sm font-medium text-primary-foreground shadow transition-all hover:bg-primary/90 hover:scale-105"
+              >
+                Get Started
+                <ChevronRight className="ml-2 h-4 w-4" />
+              </Link>
+             )}
               <Link 
                 href="https://github.com/atulya-srivastava/fylr" 
                 className="inline-flex h-11 items-center justify-center rounded-md border border-input bg-background px-8 text-sm font-medium shadow-sm transition-colors hover:bg-accent hover:text-accent-foreground"
@@ -99,48 +78,6 @@ export default async function FylrLanding() {
               </Link>
             </div>
 
-            {/* Dashboard Preview Mockup */}
-            <div className="mt-16 mx-auto max-w-5xl rounded-xl border border-border bg-card/50 p-2 shadow-2xl backdrop-blur-sm">
-              <div className="rounded-lg bg-background overflow-hidden border border-border/50 aspect-video relative group">
-                {/* Placeholder for your actual dashboard screenshot */}
-                <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10"></div>
-                
-                {/* Mock UI Structure representing your screenshot */}
-                <div className="w-full h-full flex">
-                    <div className="w-64 border-r border-border p-4 hidden md:block bg-card/30">
-                        <div className="h-8 w-24 bg-primary/20 rounded mb-8"></div>
-                        <div className="space-y-3">
-                            <div className="h-4 w-full bg-muted/20 rounded"></div>
-                            <div className="h-4 w-3/4 bg-muted/20 rounded"></div>
-                            <div className="h-4 w-5/6 bg-muted/20 rounded"></div>
-                        </div>
-                    </div>
-                    <div className="flex-1 p-6">
-                        <div className="flex justify-between mb-8">
-                            <div className="h-8 w-48 bg-muted/20 rounded"></div>
-                            <div className="h-8 w-8 rounded-full bg-primary/20"></div>
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                           <div className="h-32 rounded-lg border border-border bg-card flex items-center justify-center">
-                                <FileImage className="h-10 w-10 text-muted-foreground/50" />
-                           </div>
-                           <div className="h-32 rounded-lg border border-border bg-card flex items-center justify-center">
-                                <FolderOpen className="h-10 w-10 text-primary/50" />
-                           </div>
-                           <div className="h-32 rounded-lg border border-border bg-card flex items-center justify-center">
-                                <FileText className="h-10 w-10 text-muted-foreground/50" />
-                           </div>
-                        </div>
-                    </div>
-                </div>
-                
-                <div className="absolute inset-0 flex items-center justify-center z-20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <span className="bg-background/80 backdrop-blur px-4 py-2 rounded-full border border-border text-sm font-medium">
-                        Preview of your dashboard
-                    </span>
-                </div>
-              </div>
-            </div>
           </div>
         </section>
         <FylrHeroSection/>
