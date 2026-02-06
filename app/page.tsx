@@ -1,10 +1,12 @@
 import React from 'react'
 import Dashboard from './dashboard/page'
+import NavBar from './components/NavBar'
 
 function page() {
   return (
     <div>
-      <Dashboard/>
+      <NavBar/>
+      hello there welcome to fylr pls go to dashboard this page hasnt been built yet
     </div>
   )
 }
