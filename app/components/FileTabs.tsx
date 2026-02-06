@@ -60,7 +60,7 @@ export default function FileTabs({
   }, [activeTab]);
 
   return (
-    <div className="relative flex justify-between  w-full" ref={containerRef}>
+    <div className="relative flex md:justify-between  w-full" ref={containerRef}>
       {/* Sliding background indicator */}
       <div
         className="absolute h-3/4 top-1/2 -translate-y-1/2 bg-primary/10 rounded-lg transition-all duration-300 ease-out"
@@ -71,7 +71,7 @@ export default function FileTabs({
       />
       
       {/* Tab buttons */}
-      <div className="relative justify-between flex gap-3 p-1.5 w-full bg-muted/50 rounded-lg">
+      <div className="relative md:justify-between flex md:gap-3 gap-0.5 p-1.5 w-full bg-muted/50 rounded-lg">
         {tabs.map((tab, index) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.key;
