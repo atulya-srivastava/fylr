@@ -3,10 +3,8 @@ import { files } from "@/lib/db/schema"
 import { auth } from "@clerk/nextjs/server";
 import {and,eq} from "drizzle-orm"
 import ImageKit from "imagekit";
-import { Upload } from "lucide-react";
 import { NextRequest, NextResponse } from "next/server";
 import { v4 as uuidv4 } from "uuid";
-import { size } from "zod";
 
 
 //image kit credentials
@@ -103,7 +101,7 @@ export async function POST(request: NextRequest){
 
            return NextResponse.json(newFile, {status: 200})
         
-    } catch (error) {
+    } catch (_error) {
         return NextResponse.json({error:"Failed to upload file"},{status: 401})
     }
 }
