@@ -22,6 +22,7 @@ import {
   FolderPlus,
   ArrowRight,
   File as FileIcon,
+  Minimize2,
 } from "lucide-react";
 import axios from "axios";
 
@@ -52,6 +53,10 @@ export default function FileUploadForm({
   const [folderName, setFolderName] = useState("");
   const [creatingFolder, setCreatingFolder] = useState(false);
 
+  // Oversized image state (for resize option)
+  const [oversizedFile, setOversizedFile] = useState<File | null>(null);
+  const [resizing, setResizing] = useState(false);
+
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
@@ -67,16 +72,59 @@ export default function FileUploadForm({
     }
   };
 
-  const validateAndSetFile = (selectedFile: File) => {
+  const validateAndSetFile = async (selectedFile: File) => {
     // Validate file size (5MB limit)
     if (selectedFile.size > 5 * 1024 * 1024) {
-      setError("File size exceeds 5MB limit");
+      setError("File size exceeds 5MB limit. Please choose a smaller file.");
+      setOversizedFile(selectedFile);
+      setCustomFileName(selectedFile.name);
       return;
     }
+
+    // Validate image resolution (25 megapixels limit for ImageKit)
+    const MAX_MEGAPIXELS = 25;
+    try {
+      const dimensions = await getImageDimensions(selectedFile);
+      const megapixels = (dimensions.width * dimensions.height) / 1_000_000;
+      
+      if (megapixels > MAX_MEGAPIXELS) {
+        setError(
+          `Image resolution too high (${megapixels.toFixed(1)} MP). Maximum allowed is ${MAX_MEGAPIXELS} MP.`
+        );
+        // Store the oversized file so user can choose to resize it
+        setOversizedFile(selectedFile);
+        setCustomFileName(selectedFile.name);
+        return;
+      }
+    } catch {
+      // If we can't read dimensions, we'll let the upload proceed and let ImageKit handle it
+      console.warn("Could not validate image dimensions");
+    }
+
     setFile(selectedFile);
     // Set the initial custom file name from the original file name
     setCustomFileName(selectedFile.name);
     setError(null);
+  };
+
+  // Helper function to get image dimensions
+  const getImageDimensions = (file: File): Promise<{ width: number; height: number }> => {
+    return new Promise((resolve, reject) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      
+      img.onload = () => {
+        URL.revokeObjectURL(url);
+        resolve({ width: img.width, height: img.height });
+      };
+      
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error("Failed to load image"));
+      };
+      
+      img.src = url;
+    });
   };
 
   const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
@@ -85,10 +133,93 @@ export default function FileUploadForm({
 
   const clearFile = () => {
     setFile(null);
+    setOversizedFile(null);
     setCustomFileName("");
     setError(null);
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
+    }
+  };
+
+  // Resize oversized image and set as file for upload
+  const resizeAndUpload = async () => {
+    if (!oversizedFile) return;
+
+    setResizing(true);
+    setError(null);
+
+    try {
+      const MAX_MEGAPIXELS = 25;
+      const dimensions = await getImageDimensions(oversizedFile);
+      const currentMegapixels = (dimensions.width * dimensions.height) / 1_000_000;
+      
+      // Calculate scale factor to get under 25MP
+      const scaleFactor = Math.sqrt(MAX_MEGAPIXELS / currentMegapixels) * 0.95; // 0.95 for safety margin
+      const newWidth = Math.floor(dimensions.width * scaleFactor);
+      const newHeight = Math.floor(dimensions.height * scaleFactor);
+
+      // Create canvas and resize
+      const canvas = document.createElement("canvas");
+      canvas.width = newWidth;
+      canvas.height = newHeight;
+      const ctx = canvas.getContext("2d");
+
+      if (!ctx) {
+        throw new Error("Could not get canvas context");
+      }
+
+      // Load image
+      const img = new window.Image();
+      const url = URL.createObjectURL(oversizedFile);
+
+      await new Promise<void>((resolve, reject) => {
+        img.onload = () => {
+          ctx.drawImage(img, 0, 0, newWidth, newHeight);
+          URL.revokeObjectURL(url);
+          resolve();
+        };
+        img.onerror = () => {
+          URL.revokeObjectURL(url);
+          reject(new Error("Failed to load image"));
+        };
+        img.src = url;
+      });
+
+      // Convert canvas to blob
+      const blob = await new Promise<Blob | null>((resolve) => {
+        canvas.toBlob(resolve, oversizedFile.type || "image/jpeg", 0.9);
+      });
+
+      if (!blob) {
+        throw new Error("Failed to create resized image");
+      }
+
+      // Create new file from blob
+      const resizedFile = new File([blob], oversizedFile.name, {
+        type: blob.type,
+      });
+
+      // Check if resized file is still too large (file size)
+      if (resizedFile.size > 5 * 1024 * 1024) {
+        setError("Resized image still exceeds 5MB. Please use a smaller image.");
+        setResizing(false);
+        return;
+      }
+
+      // Set the resized file for upload
+      setFile(resizedFile);
+      setOversizedFile(null);
+      setError(null);
+      
+      toast.success("Image Resized", {
+        description: `Resized from ${dimensions.width}×${dimensions.height} to ${newWidth}×${newHeight}`,
+      });
+
+    } catch (err) {
+      console.error("Error resizing image:", err);
+      setError("Failed to resize image. Please try a different image.");
+    } finally {
+      setResizing(false);
     }
   };
 
@@ -211,7 +342,7 @@ export default function FileUploadForm({
             : "border-muted-foreground/25 hover:border-primary/50 hover:bg-muted/50"
         }`}
       >
-        {!file ? (
+        {!file && !oversizedFile ? (
           <div className="space-y-3">
             <div className="bg-muted w-16 h-16 mx-auto rounded-full flex items-center justify-center">
               <FileUp className="h-8 w-8 text-muted-foreground" />
@@ -240,83 +371,110 @@ export default function FileUploadForm({
             />
           </div>
         ) : (
-          <div className="space-y-4">
-            {/* File info card */}
-            <div className="flex items-center justify-between bg-background p-3 rounded-md border shadow-sm">
-              <div className="flex items-center space-x-3 overflow-hidden flex-1">
-                <div className="p-2 bg-primary/10 rounded-md shrink-0">
-                  <FileIcon className="h-5 w-5 text-primary" />
+          (() => {
+            const displayFile = file || oversizedFile;
+            return (
+              <div className="space-y-4">
+                {/* File info card */}
+                <div className="flex items-center justify-between bg-background p-3 rounded-md border shadow-sm">
+                  <div className="flex items-center space-x-3 overflow-hidden flex-1">
+                    <div className="p-2 bg-primary/10 rounded-md shrink-0">
+                      <FileIcon className="h-5 w-5 text-primary" />
+                    </div>
+                    <div className="text-left overflow-hidden flex-1">
+                      <p className="text-xs text-muted-foreground mb-1">
+                        Original: {displayFile?.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {displayFile && displayFile.size < 1024
+                          ? `${displayFile.size} B`
+                          : displayFile && displayFile.size < 1024 * 1024
+                          ? `${(displayFile.size / 1024).toFixed(1)} KB`
+                          : displayFile ? `${(displayFile.size / (1024 * 1024)).toFixed(1)} MB` : ''}
+                      </p>
+                    </div>
+                  </div>
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={clearFile}
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
                 </div>
-                <div className="text-left overflow-hidden flex-1">
-                  <p className="text-xs text-muted-foreground mb-1">
-                    Original: {file.name}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {file.size < 1024
-                      ? `${file.size} B`
-                      : file.size < 1024 * 1024
-                      ? `${(file.size / 1024).toFixed(1)} KB`
-                      : `${(file.size / (1024 * 1024)).toFixed(1)} MB`}
-                  </p>
+
+                {/* Editable file name input */}
+                <div className="space-y-2">
+                  <Label htmlFor="custom-filename" className="text-left block text-sm font-medium">
+                    File Name
+                  </Label>
+                  <Input
+                    id="custom-filename"
+                    value={customFileName}
+                    onChange={(e) => setCustomFileName(e.target.value)}
+                    placeholder="Enter file name..."
+                    className="w-full"
+                  />
                 </div>
+
+                {error && (
+                  <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md flex items-center gap-2">
+                    <AlertTriangle className="h-4 w-4" />
+                    <span>{error}</span>
+                  </div>
+                )}
+
+                {/* Resize button for oversized files (only for resolution issues, not file size) */}
+                {oversizedFile && error && error.includes("resolution") && (
+                  <Button
+                    onClick={resizeAndUpload}
+                    disabled={resizing}
+                    variant="secondary"
+                    className="w-full gap-2"
+                  >
+                    {resizing ? (
+                      "Resizing..."
+                    ) : (
+                      <>
+                        <Minimize2 className="h-4 w-4" />
+                        Upload with Reduced Resolution
+                      </>
+                    )}
+                  </Button>
+                )}
+
+                {uploading && (
+                  <div className="space-y-1">
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>Uploading...</span>
+                      <span>{progress}%</span>
+                    </div>
+                    <Progress value={progress} className="h-2" />
+                  </div>
+                )}
+
+                {/* Only show upload button when we have a valid file (not oversized) */}
+                {file && (
+                  <Button
+                    onClick={handleUpload}
+                    disabled={uploading || !!error || !customFileName.trim()}
+                    className="w-full gap-2"
+                  >
+                    {uploading ? (
+                      "Uploading..."
+                    ) : (
+                      <>
+                        <Upload className="h-4 w-4" />
+                        Upload Image
+                        <ArrowRight className="h-4 w-4" />
+                      </>
+                    )}
+                  </Button>
+                )}
               </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={clearFile}
-                className="h-8 w-8 text-muted-foreground hover:text-foreground shrink-0"
-              >
-                <X className="h-4 w-4" />
-              </Button>
-            </div>
-
-            {/* Editable file name input */}
-            <div className="space-y-2">
-              <Label htmlFor="custom-filename" className="text-left block text-sm font-medium">
-                File Name
-              </Label>
-              <Input
-                id="custom-filename"
-                value={customFileName}
-                onChange={(e) => setCustomFileName(e.target.value)}
-                placeholder="Enter file name..."
-                className="w-full"
-              />
-            </div>
-
-            {error && (
-              <div className="bg-destructive/10 text-destructive text-sm p-3 rounded-md flex items-center gap-2">
-                <AlertTriangle className="h-4 w-4" />
-                <span>{error}</span>
-              </div>
-            )}
-
-            {uploading && (
-              <div className="space-y-1">
-                <div className="flex justify-between text-xs text-muted-foreground">
-                  <span>Uploading...</span>
-                  <span>{progress}%</span>
-                </div>
-                <Progress value={progress} className="h-2" />
-              </div>
-            )}
-
-            <Button
-              onClick={handleUpload}
-              disabled={uploading || !!error || !customFileName.trim()}
-              className="w-full gap-2"
-            >
-              {uploading ? (
-                "Uploading..."
-              ) : (
-                <>
-                  <Upload className="h-4 w-4" />
-                  Upload Image
-                  <ArrowRight className="h-4 w-4" />
-                </>
-              )}
-            </Button>
-          </div>
+            );
+          })()
         )}
       </div>
 
@@ -327,6 +485,7 @@ export default function FileUploadForm({
           <li>• Images are private and only visible to you</li>
           <li>• Supported formats: JPG, PNG, GIF, WebP</li>
           <li>• Maximum file size: 5MB</li>
+          <li>• Maximum resolution: 25 megapixels</li>
         </ul>
       </div>
 
