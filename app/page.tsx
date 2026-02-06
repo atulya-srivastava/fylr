@@ -100,12 +100,10 @@ export default async function FylrLanding() {
             </div>
 
             {/* Dashboard Preview Mockup */}
-            <div className="mt-16 mx-auto max-w-5xl rounded-xl border border-border bg-card/50 p-2 shadow-2xl backdrop-blur-sm">
+            {/* <div className="mt-16 mx-auto max-w-5xl rounded-xl border border-border bg-card/50 p-2 shadow-2xl backdrop-blur-sm">
               <div className="rounded-lg bg-background overflow-hidden border border-border/50 aspect-video relative group">
-                {/* Placeholder for your actual dashboard screenshot */}
                 <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent z-10"></div>
-                
-                {/* Mock UI Structure representing your screenshot */}
+
                 <div className="w-full h-full flex">
                     <div className="w-64 border-r border-border p-4 hidden md:block bg-card/30">
                         <div className="h-8 w-24 bg-primary/20 rounded mb-8"></div>
@@ -140,7 +138,7 @@ export default async function FylrLanding() {
                     </span>
                 </div>
               </div>
-            </div>
+            </div> */}
           </div>
         </section>
         <FylrHeroSection/>

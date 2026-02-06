@@ -1,7 +1,8 @@
 "use client";
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useTheme } from "next-themes";
 import { 
   CloudUpload, 
   FolderPlus, 
@@ -15,14 +16,24 @@ import {
 } from 'lucide-react';
 
 export default function FylrHeroSection() {
+  const { resolvedTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   return (
     // 1. BACKGROUND: We add the 'dark' class to force the dark theme variables from your CSS.
     // The lamp effect requires a dark background to be visible.
-    <div className="dark min-h-screen bg-background text-foreground overflow-hidden flex flex-col items-center pt-20 pb-20 relative selection:bg-primary/30">
+    <div className="min-h-screen bg-background text-foreground overflow-hidden flex flex-col items-center pt-20 pb-20 relative selection:bg-primary/30">
       
       {/* --- 1. THE LOGO (Layer: Top) --- */}
       <div className="relative z-30 -top-6 flex flex-col items-center">
-        <h1 className="font-sans text-[10rem] md:text-[14rem] leading-[0.8] font-bold drop-shadow-2xl opacity-90 select-none">
+        <h1 className={cn(
+          "font-sans text-[10rem] md:text-[14rem] leading-[0.8] font-bold drop-shadow-2xl opacity-90 select-none",
+          mounted && resolvedTheme === 'dark' ? "text-white/90" : "text-primary"
+        )}>
           fylr
         </h1>
       </div>
@@ -161,7 +172,7 @@ export default function FylrHeroSection() {
 function LampContainer({ className }: { className?: string }) {
   return (
     <div className={cn("relative flex flex-col items-center justify-center overflow-hidden bg-transparent w-full rounded-md z-0", className)}>
-      <div className="relative flex w-full flex-1 scale-y-125 items-center justify-center isolate z-0 ">
+      <div className="relative flex w-full flex-1 scale-y-125 items-center justify-center isolate z-0 overflow-hidden">
         
         {/* LEFT CONE */}
         <motion.div
@@ -173,7 +184,7 @@ function LampContainer({ className }: { className?: string }) {
           className="absolute inset-auto right-1/2 h-56 overflow-visible w-[30rem] bg-gradient-conic from-primary via-transparent to-transparent text-white [--conic-position:from_70deg_at_center_top]"
         >
           {/* MASKING: Must match bg-background (which is dark due to parent class) */}
-          <div className="absolute w-[100%] left-0 bg-background h-40 bottom-0 z-20 [mask-image:linear-gradient(to_top,white,transparent)]" />
+          <div className="absolute w-[100%] left-0 bg-background h-40 bottom-0 z-20 [mask-image:linear-gradient(to_top,white,transparent)]" /> 
           <div className="absolute w-40 h-[100%] left-0 bg-background bottom-0 z-20 [mask-image:linear-gradient(to_right,white,transparent)]" />
         </motion.div>
 
@@ -187,16 +198,11 @@ function LampContainer({ className }: { className?: string }) {
           className="absolute inset-auto left-1/2 h-56 w-[30rem] bg-gradient-conic from-transparent via-transparent to-primary text-white [--conic-position:from_290deg_at_center_top]"
         >
           {/* MASKING: Must match bg-background */}
-          <div className="absolute w-40 h-[100%] right-0 bg-background bottom-0 z-20 [mask-image:linear-gradient(to_left,white,transparent)]" />
-          <div className="absolute w-[100%] right-0 bg-background h-40 bottom-0 z-20 [mask-image:linear-gradient(to_top,white,transparent)]" />
+          {/* <div className="absolute w-40 h-[100%] right-0 bg-background bottom-0 z-20 [mask-image:linear-gradient(to_left,white,transparent)]" /> */}
+          {/* <div className="absolute w-[100%] right-0 bg-background h-40 bottom-0 z-20 [mask-image:linear-gradient(to_top,white,transparent)]" /> */}
         </motion.div>
 
-        {/* GLOWS */}
-        {/* Using bg-background for seamless blending */}
-        <div className="absolute top-1/2 h-48 w-full translate-y-12 scale-x-150 bg-background blur-2xl"></div>
-        <div className="absolute top-1/2 z-50 h-48 w-full bg-transparent opacity-10 backdrop-blur-md"></div>
-        <div className="absolute inset-auto z-50 h-36 w-[28rem] -translate-y-1/2 rounded-full bg-primary opacity-50 blur-3xl"></div>
-        
+   
         <motion.div
           initial={{ width: "8rem" }}
           whileInView={{ width: "16rem" }}
@@ -211,8 +217,8 @@ function LampContainer({ className }: { className?: string }) {
           className="absolute inset-auto z-50 h-0.5 w-[30rem] -translate-y-[7rem] bg-primary "
         ></motion.div>
 
-        {/* Top Cap Mask */}
-        <div className="absolute inset-auto z-40 h-44 w-full -translate-y-[12.5rem] bg-background "></div>
+        {/* Top Cap Mask - covers the glow above the line */}
+        <div className="absolute inset-auto z-40 h-80 w-full -translate-y-[17rem] bg-background"></div>
       </div>
     </div>
   );
