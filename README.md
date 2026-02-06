@@ -2,10 +2,13 @@
 
 A modern, lightning-fast cloud file management application built with Next.js 15, featuring secure authentication, smart folder organization, and seamless media previews.
 
+
 ![Next.js](https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js)
 ![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)
 ![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-4-38B2AC?style=flat-square&logo=tailwind-css)
 ![License](https://img.shields.io/badge/License-MIT-green?style=flat-square)
+
+<img width="1917" height="937" alt="image" src="https://github.com/user-attachments/assets/b9206dbd-62c9-4f00-aae4-33750a4f93cc" />
 
 ## Features
 
